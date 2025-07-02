@@ -8,7 +8,7 @@ _Real-time facial recognition, emotion analysis, face shape prediction, and age/
 
 <div align='center'>
 
-![BiometriQ Logo](assets/Icons/logo.png)
+<img src="assets/Icons/logo.png" alt="BiometriQ Logo" width="150" height="150">
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
 [![PySide6](https://img.shields.io/badge/PySide6-6.6.1-green.svg)](https://doc.qt.io/qtforpython/)
@@ -78,7 +78,7 @@ BiometriQ/
 │   ├── model_manager.py           # AI model management
 │   └── face_recognition_core.py   # InsightFace integration
 ├──
-├── 🤖 Models/
+├── 🤖 Models/                     # 📥 Download from Google Drive
 │   ├── emotion.h5                 # Emotion recognition model
 │   └── shape.h5                   # Face shape prediction model
 ├──
@@ -138,13 +138,47 @@ BiometriQ/
 git clone https://github.com/yourusername/BiometriQ.git
 cd BiometriQ
 
-# 2. Create virtual environment (recommended)
+# 2. Download AI Models
+# Download the Models folder from: 
+# https://drive.google.com/drive/folders/1GrQXZ3V5evxBCGOO0Hplg5_zdnr8x_dk?usp=sharing
+# Extract and place in project root
+
+# 3. Create virtual environment (recommended)
 python -m venv biometriq_env
 source biometriq_env/bin/activate  # On Windows: biometriq_env\Scripts\activate
 
-# 3. Or manual installation
+# 4. Install dependencies
 pip install -r requirements.txt
 ```
+
+### 📝 **Step-by-Step Setup Guide**
+
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/yourusername/BiometriQ.git
+   cd BiometriQ
+   ```
+
+2. **Download AI Models** 🚨
+   - Visit: [Google Drive Models](https://drive.google.com/drive/folders/1GrQXZ3V5evxBCGOO0Hplg5_zdnr8x_dk?usp=sharing)
+   - Download the `Models` folder (~40MB total)
+   - Place in project root
+
+3. **Setup Python Environment**
+   ```bash
+   python -m venv biometriq_env
+   source biometriq_env/bin/activate  # Windows: biometriq_env\Scripts\activate
+   ```
+
+4. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. **Launch Application**
+   ```bash
+   python main.py
+   ```
 
 ### Dependencies Overview
 
