@@ -898,8 +898,7 @@ class ModernOfflineWindow(QWidget):
             self.predict_emotion_button.setEnabled(True)
         
         # Enable analyze all button if any models are available
-        if available_models:
-            self.analyze_all_button.setEnabled(True)
+        self.analyze_all_button.setEnabled(True)
 
     def toggle_face_recognition(self, enabled):
         self.face_recognition_enabled = enabled
