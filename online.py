@@ -404,6 +404,9 @@ class ModernOnlineWindow(QWidget):
         self.max_camera_retries = 3
         self.current_frame = None
         
+        # ✅ NOUVEAU: Variables pour stocker les coordonnées du visage pour l'overlay
+        self.current_face_box = None
+        
         self.face_recognition = None
         self.face_recognition_enabled = False
 
@@ -641,6 +644,23 @@ class ModernOnlineWindow(QWidget):
                 
             except Exception as e:
                 self.face_recognition = None
+
+    # ✅ NOUVELLE FONCTION: Dessiner les overlays sur le frame
+    def draw_face_overlays(self, frame):
+        """Dessine un carré vert autour du visage détecté"""
+        if self.current_face_box is None:
+            return frame
+        
+        # Copier le frame pour ne pas modifier l'original
+        overlay_frame = frame.copy()
+        
+        # Récupérer les coordonnées de la boîte du visage
+        x, y, w, h = self.current_face_box
+        
+        # 🟢 DESSINER UNIQUEMENT LA BOÎTE VERTE autour du visage
+        cv2.rectangle(overlay_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        
+        return overlay_frame
 
     def get_modern_style(self):
         return """
@@ -998,7 +1018,10 @@ class ModernOnlineWindow(QWidget):
         try:
             self.current_frame = frame.copy()
             
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            # ✅ NOUVEAU: Appliquer les overlays avant d'afficher le frame
+            frame_with_overlays = self.draw_face_overlays(frame)
+            
+            rgb_frame = cv2.cvtColor(frame_with_overlays, cv2.COLOR_BGR2RGB)
             h, w, ch = rgb_frame.shape
             bytes_per_line = ch * w
             qt_image = QImage(rgb_frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
@@ -1019,57 +1042,67 @@ class ModernOnlineWindow(QWidget):
     
     def process_frame_analysis(self, frame):
         try:
-            # Toujours utiliser face_recognition pour genre et âge maintenant
-            if self.face_recognition:
-                face_results = self.face_recognition.analyze_faces(frame)
-                
-                if face_results:
-                    face_data = face_results[0]
-                    
-                    age_exact = face_data.get('age_exact', 'Unknown')
-                    age_range = face_data.get('age_range', 'Unknown')
-                    gender = face_data.get('gender', 'Unknown')
-                    match = face_data.get('match')
-                    similarity = face_data.get('similarity', 0.0)
-                    
-                    if age_exact != 'Unknown' and age_exact is not None:
-                        self.age_display.setText(f"🎂 Age: {age_exact:.0f} years ({age_range})")
-                    else:
-                        self.age_display.setText("🎂 Age: Unknown")
-                    
-                    self.gender_display.setText(f"👤 Gender: {gender}")
-                    
-                    # Gestion de la reconnaissance d'identité seulement si activée
-                    if self.face_recognition_enabled:
-                        if match:
-                            threshold = self.threshold_slider.value() / 100.0
-                            if similarity > threshold:
-                                self.face_recognition_display.setText(f"👥 Identity: {match['name']} ({similarity:.2f})")
-                                self.confidence_label.setText(f"Match Confidence: {similarity:.3f}")
-                            else:
-                                self.face_recognition_display.setText("👥 Identity: Unknown (Below threshold)")
-                                self.confidence_label.setText(f"Best Match: {similarity:.3f} (Below {threshold:.2f})")
-                        else:
-                            self.face_recognition_display.setText("👥 Identity: Unknown")
-                            self.confidence_label.setText(f"Best Match: {similarity:.3f}")
-                    else:
-                        self.face_recognition_display.setText("👥 Identity: Face Recognition Disabled")
-                        self.confidence_label.setText("Confidence: --")
-                else:
-                    self.reset_face_recognition_results()
-            else:
-                # Si pas de face_recognition, informer l'utilisateur
-                self.gender_display.setText("👤 Gender: Face Recognition Required")
-                self.age_display.setText("🎂 Age: Face Recognition Required")
-                self.face_recognition_display.setText("👥 Identity: Face Recognition Required")
-                self.confidence_label.setText("Confidence: --")
+            # ✅ RÉINITIALISER la variable d'overlay au début
+            self.current_face_box = None
             
+            # Détecter les visages avec dlib pour les overlays
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             faces = self.face_detector(gray)
             
             if len(faces) > 0:
+                # Prendre le premier visage détecté
                 face = faces[0]
                 x, y, w, h = face.left(), face.top(), face.width(), face.height()
+                
+                # ✅ SAUVEGARDER la boîte du visage pour les overlays
+                self.current_face_box = (x, y, w, h)
+                
+                # Toujours utiliser face_recognition pour genre et âge maintenant
+                if self.face_recognition:
+                    face_results = self.face_recognition.analyze_faces(frame)
+                    
+                    if face_results:
+                        face_data = face_results[0]
+                        
+                        age_exact = face_data.get('age_exact', 'Unknown')
+                        age_range = face_data.get('age_range', 'Unknown')
+                        gender = face_data.get('gender', 'Unknown')
+                        match = face_data.get('match')
+                        similarity = face_data.get('similarity', 0.0)
+                        
+                        if age_exact != 'Unknown' and age_exact is not None:
+                            self.age_display.setText(f"🎂 Age: {age_exact:.0f} years ({age_range})")
+                        else:
+                            self.age_display.setText("🎂 Age: Unknown")
+                        
+                        self.gender_display.setText(f"👤 Gender: {gender}")
+                        
+                        # Gestion de la reconnaissance d'identité seulement si activée
+                        if self.face_recognition_enabled:
+                            if match:
+                                threshold = self.threshold_slider.value() / 100.0
+                                if similarity > threshold:
+                                    self.face_recognition_display.setText(f"👥 Identity: {match['name']} ({similarity:.2f})")
+                                    self.confidence_label.setText(f"Match Confidence: {similarity:.3f}")
+                                else:
+                                    self.face_recognition_display.setText("👥 Identity: Unknown (Below threshold)")
+                                    self.confidence_label.setText(f"Best Match: {similarity:.3f} (Below {threshold:.2f})")
+                            else:
+                                self.face_recognition_display.setText("👥 Identity: Unknown")
+                                self.confidence_label.setText(f"Best Match: {similarity:.3f}")
+                        else:
+                            self.face_recognition_display.setText("👥 Identity: Face Recognition Disabled")
+                            self.confidence_label.setText("Confidence: --")
+                    else:
+                        self.reset_face_recognition_results()
+                else:
+                    # Si pas de face_recognition, informer l'utilisateur
+                    self.gender_display.setText("👤 Gender: Face Recognition Required")
+                    self.age_display.setText("🎂 Age: Face Recognition Required")
+                    self.face_recognition_display.setText("👥 Identity: Face Recognition Required")
+                    self.confidence_label.setText("Confidence: --")
+                
+                # Analyser avec les modèles traditionnels
                 face_img = frame[y:y+h, x:x+w]
                 
                 if face_img.size > 0:
@@ -1099,6 +1132,9 @@ class ModernOnlineWindow(QWidget):
     def reset_basic_analysis_results(self):
         self.shape_display.setText("🔍 Face Shape: No face detected")
         self.emotion_display.setText("😊 Emotion: No face detected")
+        
+        # ✅ RÉINITIALISER la variable d'overlay
+        self.current_face_box = None
         
         # Genre et âge maintenant toujours gérés par face_recognition
         if not self.face_recognition:
