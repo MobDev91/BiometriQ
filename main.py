@@ -56,6 +56,18 @@ class ModernWelcomeWindow(QWidget):
         subtitle_label.setAlignment(Qt.AlignCenter)
         title_layout.addWidget(subtitle_label)
 
+        # Program Information
+        program_label = QLabel("Master Embedded Artificial Intelligence")
+        program_label.setObjectName("program")
+        program_label.setAlignment(Qt.AlignCenter)
+        title_layout.addWidget(program_label)
+
+        # Development Team
+        dev_team_label = QLabel("Dev Team:\nBENYSSEF OUSSAMA\nEL FATHI ABDESSAMAD")
+        dev_team_label.setObjectName("devTeam")
+        dev_team_label.setAlignment(Qt.AlignCenter)
+        title_layout.addWidget(dev_team_label)
+
         main_layout.addLayout(title_layout)
 
         # Logo Section
@@ -129,6 +141,29 @@ class ModernWelcomeWindow(QWidget):
             color: #cbd5e1;
             font-weight: 400;
             margin-bottom: 20px;
+        }
+        
+        QLabel#program {
+            font-size: 16px;
+            color: #a78bfa;
+            font-weight: 600;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        QLabel#devTeam {
+            font-size: 14px;
+            color: #e2e8f0;
+            font-weight: 500;
+            margin: 10px 0;
+            padding: 15px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            line-height: 1.4;
         }
         
         QLabel#features {
